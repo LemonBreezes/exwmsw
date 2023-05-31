@@ -5,7 +5,7 @@
 ;; Author: ***REMOVED***
 ;; URL: https://github.com/Lemonbreezes/exwm-screen-workspaces
 ;; Keywords: exwm workspaces
-;; Package-Requires: ((exwm "0.22.1"))
+;; Package-Requires: ((exwm "0.22.1") (dash "2.16.0"))
 ;; Version: 0.1
 
 ;; This file is part of GNU Emacs.
@@ -47,20 +47,23 @@
 (defvar exwmsw-screen--debug nil)
 
 ;;; Interactive functions
+;;;###autoload
 (defun exwmsw-swap-displayed-workspace-with-center-screen ()
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                               center-screen)
+                                                 center-screen)
     (exwmsw-focus-screen current-screen)))
 
+;;;###autoload
 (defun exwmsw-swap-displayed-workspace-with-right-screen ()
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                               right-screen)
+                                                 right-screen)
     (exwmsw-focus-screen current-screen)))
 
+;;;###autoload
 (defun exwmsw-switch-to-left-screen ()
   (interactive)
   (exwm-workspace-switch
@@ -68,6 +71,7 @@
         (exwmsw-get-workspaces-for-randr-output left-screen))
    t))
 
+;;;###autoload
 (defun exwmsw-switch-to-center-screen ()
   (interactive)
   (exwm-workspace-switch
@@ -75,12 +79,14 @@
         (exwmsw-get-workspaces-for-randr-output center-screen))
    t))
 
+;;;###autoload
 (defun exwmsw-switch-to-right-screen ()
   (interactive)
   (exwm-workspace-switch
    (nth (exwmsw-get-index-shown-on-screen right-screen)
         (exwmsw-get-workspaces-for-randr-output right-screen))))
 
+;;;###autoload
 (defun exwmsw-cycle-workspace-on-screen (screen)
   (interactive)
   (exwmsw-increment-screen-workspace-index screen)
@@ -89,44 +95,50 @@
 
 (defmacro exwmsw-with-current-screen (&rest forms)
   `(let ((curr (exwmsw-get-current-screen)))
-    ,@forms
-    (unless (equal curr (exwmsw-get-current-screen))
-      (when (not (and (member curr exwm-randr-workspace-monitor-plist)
-                      (--any? (< it (length exwm-workspace--list))
-                       (exwmsw-get-workspaces-for-randr-output curr))))
-        (exwmsw-create-workspace-on-screen curr))
-      (exwmsw-focus-screen curr))))
+     ,@forms
+     (unless (equal curr (exwmsw-get-current-screen))
+       (when (not (and (member curr exwm-randr-workspace-monitor-plist)
+                       (--any? (< it (length exwm-workspace--list))
+                               (exwmsw-get-workspaces-for-randr-output curr))))
+         (exwmsw-create-workspace-on-screen curr))
+       (exwmsw-focus-screen curr))))
 
+;;;###autoload
 (defun exwmsw-swap-displayed-workspace-with-left-screen ()
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                               left-screen)
+                                                 left-screen)
     (exwmsw-focus-screen current-screen)))
 
 (defun exwmsw-get-current-screen ()
   (plist-get exwm-randr-workspace-monitor-plist exwm-workspace-current-index))
 
+;;;###autoload
 (defun exwmsw-cycle-workspace-on-left-screen ()
   (interactive)
   (exwmsw-with-current-screen
    (exwmsw-cycle-workspace-on-screen left-screen)))
 
+;;;###autoload
 (defun exwmsw-cycle-workspace-on-center-screen ()
   (interactive)
   (exwmsw-with-current-screen
    (exwmsw-cycle-workspace-on-screen center-screen)))
 
+;;;###autoload
 (defun exwmsw-cycle-workspace-on-right-screen ()
   (interactive)
   (exwmsw-with-current-screen
    (exwmsw-cycle-workspace-on-screen right-screen)))
 
+;;;###autoload
 (defun exwmsw-create-workspace-on-current-screen ()
   (interactive)
   (exwmsw-with-current-screen
    (exwmsw-create-workspace-on-screen (exwmsw-get-current-screen))))
 
+;;;###autoload
 (defun exwmsw-delete-workspace-on-current-screen ()
   (interactive)
   (exwmsw-with-current-screen
