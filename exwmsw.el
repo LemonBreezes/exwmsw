@@ -1,8 +1,8 @@
 ;;; exwmsw.el --- Monitor-independent workspaces for EXWM -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019  ***REMOVED***
+;; Copyright (C) 2019  LemonBreezes
 
-;; Author: ***REMOVED***
+;; Author: LemonBreezes
 ;; URL: https://github.com/Lemonbreezes/exwm-screen-workspaces
 ;; Keywords: exwm workspaces
 ;; Package-Requires: ((exwm "0.22.1") (dash "2.16.0"))
