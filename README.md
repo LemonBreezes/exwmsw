@@ -4,7 +4,7 @@ This package provides functions for monitor-independent manipulation of workspac
 
 ## Usage
 
-Setup current monitors:
+First, set up your monitors:
 
 ```elisp
 (setq exwmsw-screen-current-index-plist '("DP-5" 0 "DP-3" 0 "HDMI-0" 0))
@@ -13,9 +13,10 @@ Setup current monitors:
 (setq right-screen "HDMI-0")
 ```
 
-Then create the appropriate keybindings:
+Then, set up some keybindings:
 
 ```elisp
+(exwm-input-set-key (kbd "s-a") #'exwmsw-cycle-screens)
 (exwm-input-set-key (kbd "s-w") #'exwmsw-switch-to-left-screen)
 (exwm-input-set-key (kbd "s-e") #'exwmsw-switch-to-center-screen)
 (exwm-input-set-key (kbd "s-r") #'exwmsw-switch-to-right-screen)
@@ -29,12 +30,12 @@ Then create the appropriate keybindings:
 (exwm-input-set-key (kbd "s-x") #'exwmsw-delete-workspace-on-current-screen)
 ```
 
-You can also advise functions to create workspaces and delete workspaces automatically:
+Lastly, you can advise functions to create workspaces and delete workspaces automatically:
 ```elisp
 (exwmsw-advise-screen-session #'mu4e #'mu4e-quit)
 ```
 
-You can undo an advice as follows:
+You can undo an advice as well:
 
 ```elisp
 (exwmsw-unadvise-screen-session #'mu4e #'mu4e-quit)
