@@ -1,6 +1,6 @@
 # exwmsw.el
 
-Provides functions for monitor-independent manipulation of workspaces in EXWM.
+This package provides functions for monitor-independent manipulation of workspaces in EXWM.
 
 ## Usage
 
