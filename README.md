@@ -8,9 +8,9 @@ First, set up your monitors:
 
 ```elisp
 (setq exwmsw-active-workspace-plist '("DP-5" 0 "DP-3" 0 "HDMI-0" 0))
-(setq exwmsw-left-screen "DP-5")
-(setq exwmsw-center-screen "DP-3")
-(setq exwmsw-right-screen "HDMI-0")
+(setq exwmsw-the-left-screen "DP-5")
+(setq exwmsw-the-center-screen "DP-3")
+(setq exwmsw-the-right-screen "HDMI-0")
 ```
 
 Then, set up some keybindings:
