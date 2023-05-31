@@ -39,9 +39,15 @@
   "Tracks what workspace we are currently in for a particular monitor")
 
 ;; For readability.
-(defvar exwmsw-the-left-screen nil)
-(defvar exwmsw-the-center-screen nil)
-(defvar exwmsw-the-right-screen nil)
+(defvar exwmsw-the-left-screen nil
+  "The screen currently displayed on the left. Should be a string like `DP-0` or `HDMI-1`
+  and must occur in exwm-randr-workspace-monitor-plist.")
+(defvar exwmsw-the-center-screen nil
+  "The screen currently displayed in the center. Should be a string like `DP-0` or `HDMI-1`
+  and must occur in exwm-randr-workspace-monitor-plist.")
+(defvar exwmsw-the-right-screen nil
+  "The screen currently displayed on the right. Should be a string like `DP-0` or `HDMI-1`
+  and must occur in exwm-randr-workspace-monitor-plist.")
 (with-no-warnings
   (define-obsolete-variable-alias 'exwmsw-left-screen
     'exwmsw-the-left-screen)
@@ -50,12 +56,24 @@
   (define-obsolete-variable-alias 'exwmsw-right-screen
     'exwmsw-the-right-screen))
 
-;; TODO Improve debugging messages
-(defvar exwmsw--debug nil)
+(defvar exwmsw--debug nil
+  "A variable which toggles the print statements inside various non-interactive functions.
+  For debugging purposes only.")
 
 ;;; Interactive functions
+
+;;;###autoload
+(defun exwmsw-swap-displayed-workspace-with-left-screen ()
+  "Moves the current workspace to the center screen by swapping."
+  (interactive)
+  (let ((current-screen (exwmsw-get-current-screen)))
+    (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
+                                                 exwmsw-the-left-screen)
+    (exwmsw-focus-screen current-screen)))
+
 ;;;###autoload
 (defun exwmsw-swap-displayed-workspace-with-center-screen ()
+  "Moves the current workspace to the center screen by swapping."
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
@@ -64,6 +82,7 @@
 
 ;;;###autoload
 (defun exwmsw-swap-displayed-workspace-with-right-screen ()
+  "Moves the current workspace to the right screen by swapping."
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
@@ -72,6 +91,7 @@
 
 ;;;###autoload
 (defun exwmsw-switch-to-left-screen ()
+  "Focuses the workspace displayed on the left screen."
   (interactive)
   (exwm-workspace-switch
    (nth (exwmsw-get-index-shown-on-screen exwmsw-the-left-screen)
@@ -80,6 +100,7 @@
 
 ;;;###autoload
 (defun exwmsw-switch-to-center-screen ()
+  "Focuses the workspace displayed on the center screen."
   (interactive)
   (exwm-workspace-switch
    (nth (exwmsw-get-index-shown-on-screen exwmsw-the-center-screen)
@@ -88,6 +109,7 @@
 
 ;;;###autoload
 (defun exwmsw-switch-to-right-screen ()
+  "Focuses the workspace displayed on the right screen."
   (interactive)
   (exwm-workspace-switch
    (nth (exwmsw-get-index-shown-on-screen exwmsw-the-right-screen)
@@ -95,12 +117,60 @@
 
 ;;;###autoload
 (defun exwmsw-cycle-workspace-on-screen (screen)
+  "Displays the next workspace which is associated to SCREEN."
   (interactive)
   (exwmsw-increment-screen-workspace-index screen)
   (exwm-workspace-switch (nth (exwmsw-get-index-shown-on-screen screen)
                               (exwmsw-get-workspaces-for-randr-output screen))))
+;;;###autoload
+(defun exwmsw-cycle-workspace-on-left-screen ()
+  "Cycles which workspace is displayed on the left screen."
+  (interactive)
+  (exwmsw-with-current-screen
+   (exwmsw-cycle-workspace-on-screen exwmsw-the-left-screen)))
+
+;;;###autoload
+(defun exwmsw-cycle-workspace-on-center-screen ()
+  "Cycles which workspace is displayed on the center screen."
+  (interactive)
+  (exwmsw-with-current-screen
+   (exwmsw-cycle-workspace-on-screen exwmsw-the-center-screen)))
+
+;;;###autoload
+(defun exwmsw-cycle-workspace-on-right-screen ()
+  "Cycles which workspace is displayed on the right screen."
+  (interactive)
+  (exwmsw-with-current-screen
+   (exwmsw-cycle-workspace-on-screen exwmsw-the-right-screen)))
+
+;;;###autoload
+(defun exwmsw-create-workspace-on-current-screen ()
+  "Creates a fresh workspace on the crurent screen and displays it."
+  (interactive)
+  (exwmsw-with-current-screen
+   (exwmsw-create-workspace-on-screen (exwmsw-get-current-screen))))
+
+;;;###autoload
+(defun exwmsw-delete-workspace-on-current-screen ()
+  "Deletes the workspace currently focused and replaces it with a fresh one
+  if no other workspaces are associated to the current screen."
+  (interactive)
+  (exwmsw-with-current-screen
+   (exwmsw-delete-workspace-on-screen (exwmsw-get-current-screen))))
+
+;;;###autoload
+(defun exwmsw-cycle-screens (arg)
+  "Focuses the next screen in left-center-right-left-... order."
+  (interactive "p")
+  (exwm-workspace-switch
+   (nth (exwmsw-get-index-shown-on-screen (exwmsw-cycle-screens--get-next-screen arg))
+        (exwmsw-get-workspaces-for-randr-output (exwmsw-cycle-screens--get-next-screen arg)))))
+
+;;; Non-interactive functions
 
 (defmacro exwmsw-with-current-screen (&rest forms)
+  "Evaluates FORMS then refocuses previous screen, creating a new workspace
+  if necessary."
   `(let ((curr (exwmsw-get-current-screen)))
      ,@forms
      (unless (equal curr (exwmsw-get-current-screen))
@@ -112,54 +182,17 @@
          (exwmsw-create-workspace-on-screen curr))
        (exwmsw-focus-screen curr))))
 
-;;;###autoload
-(defun exwmsw-swap-displayed-workspace-with-left-screen ()
-  (interactive)
-  (let ((current-screen (exwmsw-get-current-screen)))
-    (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                                 exwmsw-the-left-screen)
-    (exwmsw-focus-screen current-screen)))
-
 (defun exwmsw-get-current-screen ()
+  "Returns the current screen as a string like `HDMI-0` or `DP-1`."
   (plist-get exwm-randr-workspace-monitor-plist exwm-workspace-current-index))
 
-;;;###autoload
-(defun exwmsw-cycle-workspace-on-left-screen ()
-  (interactive)
-  (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen exwmsw-the-left-screen)))
-
-;;;###autoload
-(defun exwmsw-cycle-workspace-on-center-screen ()
-  (interactive)
-  (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen exwmsw-the-center-screen)))
-
-;;;###autoload
-(defun exwmsw-cycle-workspace-on-right-screen ()
-  (interactive)
-  (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen exwmsw-the-right-screen)))
-
-;;;###autoload
-(defun exwmsw-create-workspace-on-current-screen ()
-  (interactive)
-  (exwmsw-with-current-screen
-   (exwmsw-create-workspace-on-screen (exwmsw-get-current-screen))))
-
-;;;###autoload
-(defun exwmsw-delete-workspace-on-current-screen ()
-  (interactive)
-  (exwmsw-with-current-screen
-   (exwmsw-delete-workspace-on-screen (exwmsw-get-current-screen))))
-
-;;; Non-interactive functions
 (defun exwmsw--debug (&rest args)
+  "Prints out arguments when debugging is enabled."
   (when exwmsw--debug
     (apply #'message args)))
 
 (defun exwmsw-create-workspace-on-screen (screen)
-  "A wrapper for exwm-workspace-add makes the new workspace active
+  "A wrapper for exwm-workspace-add that makes the new workspace active
 and adds it to exwm-randr-workspace-monitor-plist."
   (let ((exwm-workspace-list-change-hook nil))
     (ignore exwm-workspace-list-change-hook)
@@ -249,14 +282,58 @@ Then updates exwm-randr-workspace-monitor-plist."
       (exwm-randr-refresh))))
 
 (defun exwmsw-focus-screen (screen)
+  "Focuses the workspace currently displayed on SCREEN."
   (exwm-workspace-switch
    (nth (exwmsw-get-index-shown-on-screen screen)
         (exwmsw-get-workspaces-for-randr-output screen))))
 
+(defun exwmsw-get-workspaces-for-randr-output (output)
+  "Gets the list of workspaces currently displayed on OUTPUT as a list of indices
+  such as (0 2 3). These indices are in reference to exwm-workspace--list."
+  (--filter (equal (lax-plist-get exwm-randr-workspace-monitor-plist it) output)
+            (-map #'car (-partition 2 exwm-randr-workspace-monitor-plist))))
+
+(defun exwmsw-get-index-shown-on-screen (&optional screen)
+  "Returns the index of the workspace currently displayed on SCREEN. This index 
+  is in reference to exwm-workspace--list."
+  (unless screen (setq screen (exwmsw-get-current-screen)))
+  (lax-plist-get exwmsw-active-workspace-plist screen))
+
+(defun exwmsw-increment-screen-workspace-index (&optional screen)
+  "Increments the index of the workspace currently displayed on SCREEN. This index
+  is in reference to exwm-workspace--list."
+  (unless screen (setq screen (exwmsw-get-current-screen)))
+  (lax-plist-put exwmsw-active-workspace-plist
+                 screen
+                 (mod (1+ (lax-plist-get exwmsw-active-workspace-plist screen))
+                      (length (exwmsw-get-workspaces-for-randr-output screen)))))
+
+(defun exwmsw-decrement-screen-workspace-index (&optional screen)
+  "Decrements the index of the workspace currently displayed on SCREEN. This index
+  is in reference to exwm-workspace--list."
+  (unless screen (setq screen (exwmsw-get-current-screen)))
+  (lax-plist-put exwmsw-active-workspace-plist
+                 screen
+                 (mod (1- (lax-plist-get exwmsw-active-workspace-plist screen))
+                      (length (exwmsw-get-workspaces-for-randr-output screen)))))
+
+(defun exwmsw-screen-list ()
+  "Returns the list of monitors as strings such as `HDMI-0`, `DP-1`."
+  (-distinct (-filter #'stringp exwm-randr-workspace-monitor-plist)))
+
+(defun exwmsw-cycle-screens--get-next-screen (num)
+  (nth (mod (- (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
+               num)
+            (length (exwmsw-screen-list)))
+       (exwmsw-screen-list)))
+
+;;; Very simple session management
 (defun exwmsw-screen-session-start-pre-hook (&rest _args)
+  "Creates a new workspace on the current screen."
   (exwmsw-create-workspace-on-screen (exwmsw-get-current-screen)))
 
 (defun exwmsw-screen-session-end-hook (oldfun &rest args)
+  "Deletes the current workspace while maintaining focus on the current screen."
   (exwmsw-with-current-screen
    (let ((curr exwm-workspace--current))
      (apply oldfun args)
@@ -271,44 +348,6 @@ Then updates exwm-randr-workspace-monitor-plist."
                 (-flatten)))
      (delete-frame curr))))
 
-(defun exwmsw-get-workspaces-for-randr-output (output)
-  (--filter (equal (lax-plist-get exwm-randr-workspace-monitor-plist it) output)
-            (-map #'car (-partition 2 exwm-randr-workspace-monitor-plist))))
-
-(defun exwmsw-get-index-shown-on-screen (&optional screen)
-  (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-get exwmsw-active-workspace-plist screen))
-
-(defun exwmsw-increment-screen-workspace-index (&optional screen)
-  (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-put exwmsw-active-workspace-plist
-                 screen
-                 (mod (1+ (lax-plist-get exwmsw-active-workspace-plist screen))
-                      (length (exwmsw-get-workspaces-for-randr-output screen)))))
-
-(defun exwmsw-decrement-screen-workspace-index (&optional screen)
-  (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-put exwmsw-active-workspace-plist
-                 screen
-                 (mod (1- (lax-plist-get exwmsw-active-workspace-plist screen))
-                      (length (exwmsw-get-workspaces-for-randr-output screen)))))
-
-(defun exwmsw-screen-list ()
-  (-distinct (-filter #'stringp exwm-randr-workspace-monitor-plist)))
-
-(defun exwmsw-cycle-screens (arg)
-  (interactive "p")
-  (exwm-workspace-switch
-   (nth (exwmsw-get-index-shown-on-screen (exwmsw-cycle-screens--get-next-screen arg))
-        (exwmsw-get-workspaces-for-randr-output (exwmsw-cycle-screens--get-next-screen arg)))))
-
-(defun exwmsw-cycle-screens--get-next-screen (num)
-  (nth (mod (- (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
-               num)
-            (length (exwmsw-screen-list)))
-       (exwmsw-screen-list)))
-
-;;; Very simple session management
 (defun exwmsw-advise-screen-session (start-fn end-fn)
   "Advises start-fn and end-fn to create new workspaces and delete new workspaces respectively.
 Currently there is no system to garbage collect these workspaces if they are not deleted with end-fn."
