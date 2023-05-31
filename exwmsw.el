@@ -256,14 +256,14 @@ Then updates exwm-randr-workspace-monitor-plist."
   (unless screen (setq screen (exwmsw-get-current-screen)))
   (lax-plist-put exwmsw-screen-current-index-plist
                  screen
-                 (% (1+ (lax-plist-get exwmsw-screen-current-index-plist screen))
+                 (mod (1+ (lax-plist-get exwmsw-screen-current-index-plist screen))
                       (length (exwmsw-get-workspaces-for-randr-output screen)))))
 
 (defun exwmsw-decrement-screen-workspace-index (&optional screen)
   (unless screen (setq screen (exwmsw-get-current-screen)))
   (lax-plist-put exwmsw-screen-current-index-plist
                  screen
-                 (% (1- (lax-plist-get exwmsw-screen-current-index-plist screen))
+                 (mod (1- (lax-plist-get exwmsw-screen-current-index-plist screen))
                       (length (exwmsw-get-workspaces-for-randr-output screen)))))
 
 (defun exwmsw-screen-list ()
@@ -276,7 +276,7 @@ Then updates exwm-randr-workspace-monitor-plist."
         (exwmsw-get-workspaces-for-randr-output (exwmsw-cycle-screens--get-next-screen arg)))))
 
 (defun exwmsw-cycle-screens--get-next-screen (num)
-  (nth (% (- (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
+  (nth (mod (- (-elem-index (exwmsw-get-current-screen) (exwmsw-screen-list))
                num)
             (length (exwmsw-screen-list)))
        (exwmsw-screen-list)))
