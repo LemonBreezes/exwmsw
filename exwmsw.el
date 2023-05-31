@@ -39,9 +39,9 @@
   "Tracks what workspace we are currently in for a particular monitor")
 
 ;; For readability.
-(defvar left-screen nil)
-(defvar center-screen nil)
-(defvar right-screen nil)
+(defvar exwmsw-left-screen nil)
+(defvar exwmsw-center-screen nil)
+(defvar exwmsw-right-screen nil)
 
 ;; TODO Improve debugging messages
 (defvar exwmsw-screen--debug nil)
@@ -52,7 +52,7 @@
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                                 center-screen)
+                                                 exwmsw-center-screen)
     (exwmsw-focus-screen current-screen)))
 
 ;;;###autoload
@@ -60,31 +60,31 @@
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                                 right-screen)
+                                                 exwmsw-right-screen)
     (exwmsw-focus-screen current-screen)))
 
 ;;;###autoload
 (defun exwmsw-switch-to-left-screen ()
   (interactive)
   (exwm-workspace-switch
-   (nth (exwmsw-get-index-shown-on-screen left-screen)
-        (exwmsw-get-workspaces-for-randr-output left-screen))
+   (nth (exwmsw-get-index-shown-on-screen exwmsw-left-screen)
+        (exwmsw-get-workspaces-for-randr-output exwmsw-left-screen))
    t))
 
 ;;;###autoload
 (defun exwmsw-switch-to-center-screen ()
   (interactive)
   (exwm-workspace-switch
-   (nth (exwmsw-get-index-shown-on-screen center-screen)
-        (exwmsw-get-workspaces-for-randr-output center-screen))
+   (nth (exwmsw-get-index-shown-on-screen exwmsw-center-screen)
+        (exwmsw-get-workspaces-for-randr-output exwmsw-center-screen))
    t))
 
 ;;;###autoload
 (defun exwmsw-switch-to-right-screen ()
   (interactive)
   (exwm-workspace-switch
-   (nth (exwmsw-get-index-shown-on-screen right-screen)
-        (exwmsw-get-workspaces-for-randr-output right-screen))))
+   (nth (exwmsw-get-index-shown-on-screen exwmsw-right-screen)
+        (exwmsw-get-workspaces-for-randr-output exwmsw-right-screen))))
 
 ;;;###autoload
 (defun exwmsw-cycle-workspace-on-screen (screen)
@@ -108,7 +108,7 @@
   (interactive)
   (let ((current-screen (exwmsw-get-current-screen)))
     (exwmsw-swap-workspaces-displayed-on-screens (exwmsw-get-current-screen)
-                                                 left-screen)
+                                                 exwmsw-left-screen)
     (exwmsw-focus-screen current-screen)))
 
 (defun exwmsw-get-current-screen ()
@@ -118,19 +118,19 @@
 (defun exwmsw-cycle-workspace-on-left-screen ()
   (interactive)
   (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen left-screen)))
+   (exwmsw-cycle-workspace-on-screen exwmsw-left-screen)))
 
 ;;;###autoload
 (defun exwmsw-cycle-workspace-on-center-screen ()
   (interactive)
   (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen center-screen)))
+   (exwmsw-cycle-workspace-on-screen exwmsw-center-screen)))
 
 ;;;###autoload
 (defun exwmsw-cycle-workspace-on-right-screen ()
   (interactive)
   (exwmsw-with-current-screen
-   (exwmsw-cycle-workspace-on-screen right-screen)))
+   (exwmsw-cycle-workspace-on-screen exwmsw-right-screen)))
 
 ;;;###autoload
 (defun exwmsw-create-workspace-on-current-screen ()
