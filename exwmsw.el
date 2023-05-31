@@ -104,7 +104,9 @@
   `(let ((curr (exwmsw-get-current-screen)))
      ,@forms
      (unless (equal curr (exwmsw-get-current-screen))
-       (when (not (and (member curr exwm-randr-workspace-monitor-plist)
+       (exwmsw--debug "exwmsw-with-current-screen: %s"
+                      (exwmsw-get-workspaces-for-randr-output curr))
+       (when (not (and (member curr (exwmsw-screen-list))
                        (--any? (< it (length exwm-workspace--list))
                                (exwmsw-get-workspaces-for-randr-output curr))))
          (exwmsw-create-workspace-on-screen curr))
@@ -191,8 +193,10 @@ and is garbage-collected from exwm-randr-workspace-monitor-plist."
                                 exwm-workspace--list))
       (setq j (1- j))
       (exwmsw-decrement-screen-workspace-index screen))
-    (exwmsw--debug "%s %s %s" j (nth j (exwmsw-get-workspaces-for-randr-output screen))
-             (exwmsw-get-workspaces-for-randr-output screen))
+    (exwmsw--debug "exwmsw-delete-workspace-on-screen: %s %s %s"
+                   j
+                   (nth j (exwmsw-get-workspaces-for-randr-output screen))
+                   (exwmsw-get-workspaces-for-randr-output screen))
     (setq i (nth j (exwmsw-get-workspaces-for-randr-output screen)))
     ;; Ensure our index-to-be-deleted, i, is the last workspace in exwm-workspace--list
     (while (< i (1- (length exwm-workspace--list)))
@@ -201,9 +205,13 @@ and is garbage-collected from exwm-randr-workspace-monitor-plist."
       (let ((first-screen (plist-get exwm-randr-workspace-monitor-plist i))
             (second-screen (plist-get exwm-randr-workspace-monitor-plist (1+ i))))
         (plist-put exwm-randr-workspace-monitor-plist i second-screen)
-        (plist-put exwm-randr-workspace-monitor-plist (1+ i) first-screen))
-      (setq i (1+ i))
-      (exwmsw-decrement-screen-workspace-index second-screen))
+        (plist-put exwm-randr-workspace-monitor-plist (1+ i) first-screen)
+        (setq i (1+ i))
+        (exwmsw-decrement-screen-workspace-index second-screen)
+        (exwmsw--debug "exwmsw-delete-workspace-on-screen: %s %s %s"
+                       i
+                       (exwmsw-get-index-shown-on-screen first-screen)
+                       (exwmsw-get-index-shown-on-screen second-screen))))
     (setq exwm-randr-workspace-monitor-plist
           (->> exwm-randr-workspace-monitor-plist
                (-partition 2)
