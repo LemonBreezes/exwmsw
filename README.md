@@ -34,9 +34,3 @@ Lastly, you can advise functions to create workspaces and delete workspaces auto
 ```elisp
 (exwmsw-advise-screen-session #'mu4e #'mu4e-quit)
 ```
-
-You can undo an advice as well:
-
-```elisp
-(exwmsw-unadvise-screen-session #'mu4e #'mu4e-quit)
-```
