@@ -268,17 +268,6 @@ Then updates exwm-randr-workspace-monitor-plist."
       (exwmsw--debug "Swapping screens: %s | %s" screen1-workspace-index screen2)
       (plist-put exwm-randr-workspace-monitor-plist screen2-workspace-index screen1)
       (exwmsw--debug "Swapping screens: %s | %s" screen2-workspace-index screen1)
-      ;; If the workspace is an active org-noter workspace, make all org-noter workspaces
-      ;; use the new designated screens.
-      (when (bound-and-true-p exwmsw-org-noter-active-session)
-        (if (equal screen1 exwmsw-org-noter-notes-screen)
-            (setq exwmsw-org-noter-notes-screen screen2)
-          (when (equal screen2 exwmsw-org-noter-notes-screen)
-            (setq exwmsw-org-noter-notes-screen screen1)))
-        (if (equal screen1 exwmsw-org-noter-doc-screen)
-            (setq exwmsw-org-noter-doc-screen screen2)
-          (when (equal screen2 exwmsw-org-noter-doc-screen)
-            (setq exwmsw-org-noter-doc-screen screen1))))
       (exwm-randr-refresh))))
 
 (defun exwmsw-focus-screen (screen)
