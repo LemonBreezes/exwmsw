@@ -35,7 +35,7 @@
 (require 'dash)
 
 ;; These are always set modulo (length (exwmsw-get-workspaces-for-randr-output screen))
-(defvar exwmsw-screen-current-index-plist nil
+(defvar exwmsw-active-workspace-plist nil
   "Tracks what workspace we are currently in for a particular monitor")
 
 ;; For readability.
@@ -172,7 +172,7 @@ and adds it to exwm-randr-workspace-monitor-plist."
 (defun exwmsw-delete-workspace-on-screen (screen)
   "A wrapper for exwm-workspace-delete that ensures the deleted workspace is no longer active
 and is garbage-collected from exwm-randr-workspace-monitor-plist."
-  (let* ((i (nth (lax-plist-get exwmsw-screen-current-index-plist screen)
+  (let* ((i (nth (lax-plist-get exwmsw-active-workspace-plist screen)
                  (exwmsw-get-workspaces-for-randr-output screen)))
          (j (-elem-index i (exwmsw-get-workspaces-for-randr-output screen)))
          (exwm-workspace-list-change-hook nil))
@@ -207,11 +207,11 @@ and is garbage-collected from exwm-randr-workspace-monitor-plist."
     (exwm-workspace-delete i)))
 
 (defun exwmsw-swap-workspaces-displayed-on-screens (screen1 screen2)
-  "First updates exwmsw-screen-current-index-plist to reflect the new active workspaces.
+  "First updates exwmsw-active-workspace-plist to reflect the new active workspaces.
 Then updates exwm-randr-workspace-monitor-plist."
-  (when-let ((screen1-workspace-index (nth (lax-plist-get exwmsw-screen-current-index-plist screen1)
+  (when-let ((screen1-workspace-index (nth (lax-plist-get exwmsw-active-workspace-plist screen1)
                                            (exwmsw-get-workspaces-for-randr-output screen1)))
-             (screen2-workspace-index (nth (lax-plist-get exwmsw-screen-current-index-plist screen2)
+             (screen2-workspace-index (nth (lax-plist-get exwmsw-active-workspace-plist screen2)
                                            (exwmsw-get-workspaces-for-randr-output screen2))))
     (when (and (plist-get exwm-randr-workspace-monitor-plist screen1-workspace-index)
                (plist-get exwm-randr-workspace-monitor-plist screen2-workspace-index)
@@ -262,20 +262,20 @@ Then updates exwm-randr-workspace-monitor-plist."
 
 (defun exwmsw-get-index-shown-on-screen (&optional screen)
   (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-get exwmsw-screen-current-index-plist screen))
+  (lax-plist-get exwmsw-active-workspace-plist screen))
 
 (defun exwmsw-increment-screen-workspace-index (&optional screen)
   (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-put exwmsw-screen-current-index-plist
+  (lax-plist-put exwmsw-active-workspace-plist
                  screen
-                 (mod (1+ (lax-plist-get exwmsw-screen-current-index-plist screen))
+                 (mod (1+ (lax-plist-get exwmsw-active-workspace-plist screen))
                       (length (exwmsw-get-workspaces-for-randr-output screen)))))
 
 (defun exwmsw-decrement-screen-workspace-index (&optional screen)
   (unless screen (setq screen (exwmsw-get-current-screen)))
-  (lax-plist-put exwmsw-screen-current-index-plist
+  (lax-plist-put exwmsw-active-workspace-plist
                  screen
-                 (mod (1- (lax-plist-get exwmsw-screen-current-index-plist screen))
+                 (mod (1- (lax-plist-get exwmsw-active-workspace-plist screen))
                       (length (exwmsw-get-workspaces-for-randr-output screen)))))
 
 (defun exwmsw-screen-list ()
