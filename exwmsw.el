@@ -42,12 +42,16 @@
 (defvar exwmsw-the-left-screen nil)
 (defvar exwmsw-the-center-screen nil)
 (defvar exwmsw-the-right-screen nil)
-(defalias 'exwmsw-left-screen 'exwmsw-the-left-screen)
-(defalias 'exwmsw-center-screen 'exwmsw-the-center-screen)
-(defalias 'exwmsw-right-screen 'exwmsw-the-right-screen)
+(with-no-warnings
+  (define-obsolete-variable-alias 'exwmsw-left-screen
+    'exwmsw-the-left-screen)
+  (define-obsolete-variable-alias 'exwmsw-center-screen
+    'exwmsw-the-center-screen)
+  (define-obsolete-variable-alias 'exwmsw-right-screen
+    'exwmsw-the-right-screen))
 
 ;; TODO Improve debugging messages
-(defvar exwmsw-screen--debug nil)
+(defvar exwmsw--debug nil)
 
 ;;; Interactive functions
 ;;;###autoload
@@ -148,8 +152,8 @@
    (exwmsw-delete-workspace-on-screen (exwmsw-get-current-screen))))
 
 ;;; Non-interactive functions
-(defun exwmsw-screen--debug (&rest args)
-  (when exwmsw-screen--debug
+(defun exwmsw--debug (&rest args)
+  (when exwmsw--debug
     (apply #'message args)))
 
 (defun exwmsw-create-workspace-on-screen (screen)
@@ -187,7 +191,7 @@ and is garbage-collected from exwm-randr-workspace-monitor-plist."
                                 exwm-workspace--list))
       (setq j (1- j))
       (exwmsw-decrement-screen-workspace-index screen))
-    (message "%s %s %s" j (nth j (exwmsw-get-workspaces-for-randr-output screen))
+    (exwmsw--debug "%s %s %s" j (nth j (exwmsw-get-workspaces-for-randr-output screen))
              (exwmsw-get-workspaces-for-randr-output screen))
     (setq i (nth j (exwmsw-get-workspaces-for-randr-output screen)))
     ;; Ensure our index-to-be-deleted, i, is the last workspace in exwm-workspace--list
@@ -220,9 +224,9 @@ Then updates exwm-randr-workspace-monitor-plist."
                (plist-get exwm-randr-workspace-monitor-plist screen2-workspace-index)
                (not (eq screen1-workspace-index screen2-workspace-index)))
       (plist-put exwm-randr-workspace-monitor-plist screen1-workspace-index screen2)
-      (exwmsw-screen--debug "Swapping screens: %s | %s" screen1-workspace-index screen2)
+      (exwmsw--debug "Swapping screens: %s | %s" screen1-workspace-index screen2)
       (plist-put exwm-randr-workspace-monitor-plist screen2-workspace-index screen1)
-      (exwmsw-screen--debug "Swapping screens: %s | %s" screen2-workspace-index screen1)
+      (exwmsw--debug "Swapping screens: %s | %s" screen2-workspace-index screen1)
       ;; If the workspace is an active org-noter workspace, make all org-noter workspaces
       ;; use the new designated screens.
       (when (bound-and-true-p exwmsw-org-noter-active-session)
